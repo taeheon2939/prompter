@@ -3,97 +3,117 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#f3f2ef;--fg:#1d1d1b;--mut:#6b6a66;--card:#fff;--line:#d9d7d1;--rec:#e5352b;--cue:#ffd23f;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121314;--fg:#f1efe9;--mut:#9a988f;--card:#1c1d1f;--line:#34353a}}
-:root[data-theme="dark"]{--bg:#121314;--fg:#f1efe9;--mut:#9a988f;--card:#1c1d1f;--line:#34353a}
-*{box-sizing:border-box}html,body{height:100%;margin:0}
+:root{color-scheme:dark;--bg:#0f1012;--pn:#1a1b1e;--line:#33353a;--fg:#f1efe9;--mut:#9a988f;--rec:#e5352b;--cue:#ffd23f;--r:50;--fs:34px}
+*{box-sizing:border-box}html,body{height:100%;margin:0;overflow:hidden}
 body{background:var(--bg);color:var(--fg);font-family:"Noto Sans KR",system-ui,sans-serif;word-break:keep-all}
-button,select,textarea{font:inherit;color:inherit}
-#setup,#review{max-width:640px;margin:0 auto;padding:20px 18px 40px}
-h1{font-size:28px;font-weight:900;margin:8px 0 4px;letter-spacing:-.02em}
-p.sub{color:var(--mut);margin:0 0 16px;font-size:15px;line-height:1.5}
-textarea{width:100%;height:240px;padding:14px;border:1px solid var(--line);border-radius:10px;background:var(--card);font-size:16px;line-height:1.6;resize:vertical}
-.row{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}
-.row label{flex:1 1 140px;font-size:13px;color:var(--mut);display:flex;flex-direction:column;gap:4px}
-select,input[type=range]{width:100%}
-select{padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--card);font-size:15px}
-.btn{border:0;border-radius:999px;padding:14px 22px;font-weight:700;font-size:16px;cursor:pointer;background:var(--fg);color:var(--bg)}
-.btn.big{width:100%}
-#pv{background:#000;color:#fff;border-radius:12px;padding:14px 18px;margin:0 0 14px;height:150px;overflow:hidden;font-size:var(--fs,34px);font-weight:700;line-height:1.55;word-break:keep-all}
-#msg{color:var(--rec);font-size:14px;min-height:20px;margin-top:10px}
-#stage{position:fixed;inset:0;background:#000;display:none;overflow:hidden}
+button,select,textarea,input{font:inherit;color:inherit}
+#app{position:fixed;inset:0;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px)}
+#panes{flex:1;min-height:0;display:flex}
+#panes.swap{flex-direction:row-reverse}
+@media(max-width:600px) and (orientation:portrait){#panes{flex-direction:column}#panes.swap{flex-direction:column-reverse}}
+#pp{flex:0 0 calc((100% - 12px) * var(--r) / 100);position:relative;overflow-y:auto;background:#000;scrollbar-width:none;min-width:0;min-height:0}
+#pp::-webkit-scrollbar{display:none}
+#text{position:relative;padding:24px 22px 70vh;font-size:var(--fs);font-weight:700;line-height:1.55;color:#fff}
+.ln{display:block;height:.7em}
+.w{cursor:pointer;transition:opacity .2s}.w.done{opacity:.3}
+#dv{flex:0 0 12px;background:var(--line);cursor:col-resize;touch-action:none;position:relative}
+#dv::after{content:"";position:absolute;left:50%;top:50%;width:4px;height:36px;margin:-18px 0 0 -2px;border-radius:2px;background:var(--mut)}
+@media(max-width:600px) and (orientation:portrait){#dv{cursor:row-resize}#dv::after{width:36px;height:4px;margin:-2px 0 0 -18px}}
+#cp{flex:1;position:relative;background:#000;min-width:0;min-height:0;overflow:hidden}
 #cam{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 #cam.mirror{transform:scaleX(-1)}
-#prompter{position:absolute;left:0;right:0;top:0;height:50%;overflow-y:auto;scrollbar-width:none;color:#fff;padding:calc(env(safe-area-inset-top,0px) + 14px) 20px 70px;background:linear-gradient(rgba(0,0,0,.8) 78%,rgba(0,0,0,0))}
-#prompter::-webkit-scrollbar{display:none}
-#text{position:relative;font-size:var(--fs,34px);font-weight:700;line-height:1.55}
-.ln{display:block;height:.7em}
-.w{cursor:pointer;transition:opacity .2s}
-.w.done{opacity:.3}
-.w.cur{background:var(--cue);color:#111;border-radius:6px;padding:0 4px}
-#bar{position:absolute;left:0;right:0;bottom:0;display:flex;align-items:center;gap:10px;justify-content:center;padding:14px 14px calc(env(safe-area-inset-bottom,0px) + 14px);background:linear-gradient(rgba(0,0,0,0),rgba(0,0,0,.7))}
-#bar button{border:0;border-radius:999px;background:rgba(255,255,255,.18);color:#fff;font-weight:700;padding:12px 16px;font-size:15px;cursor:pointer}
-#rec{background:var(--rec)!important;padding:14px 24px!important;font-size:17px!important}
-#status{position:absolute;left:14px;right:14px;bottom:calc(env(safe-area-inset-bottom,0px) + 78px);text-align:center;color:#fff;font-size:14px;text-shadow:0 1px 4px #000}
-#count{position:absolute;inset:0;display:none;align-items:center;justify-content:center;font-size:30vw;font-weight:900;color:#fff;background:rgba(0,0,0,.45)}
-#review video{width:100%;border-radius:12px;background:#000;margin:12px 0}
-#review a{display:block;text-align:center;text-decoration:none;margin-bottom:10px}
+#count{position:absolute;inset:0;display:none;align-items:center;justify-content:center;font-size:20vmin;font-weight:900;background:rgba(0,0,0,.45)}
+#status{position:absolute;left:10px;right:10px;bottom:10px;text-align:center;font-size:14px;text-shadow:0 1px 4px #000}
+#err{position:absolute;inset:0;display:flex;flex-direction:column;gap:12px;align-items:center;justify-content:center;padding:20px;text-align:center;background:#000;font-size:15px;line-height:1.5}
+#err[hidden],#editor[hidden],#review[hidden]{display:none}
+#panel{background:var(--pn);border-top:1px solid var(--line);padding:10px 12px calc(env(safe-area-inset-bottom,0px) + 10px);max-height:42%;overflow-y:auto}
+.main{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.btn{border:1px solid var(--line);border-radius:999px;background:#26282c;padding:10px 16px;font-weight:700;font-size:14px;cursor:pointer}
+.btn:disabled{opacity:.4;cursor:default}
+.btn.rec{background:var(--rec);border-color:var(--rec);font-size:16px;padding:12px 22px}
+details{margin-top:10px}summary{cursor:pointer;color:var(--mut);font-size:14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:10px}
+.grid label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--mut)}
+.grid label.ck{flex-direction:row;align-items:center;gap:8px;font-size:14px;color:var(--fg)}
+select{padding:9px;border:1px solid var(--line);border-radius:8px;background:#26282c;font-size:14px}
+input[type=range]{width:100%}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.8);display:flex;flex-direction:column;gap:12px;padding:calc(env(safe-area-inset-top,0px) + 16px) 16px calc(env(safe-area-inset-bottom,0px) + 16px);max-width:720px;margin:0 auto;z-index:5}
+textarea{flex:1;width:100%;padding:14px;border:1px solid var(--line);border-radius:10px;background:var(--pn);font-size:16px;line-height:1.6;resize:none}
+#review video{flex:1;min-height:0;width:100%;border-radius:12px;background:#000}
+#review a{text-align:center;text-decoration:none}
 </style></head><body>
-<section id="setup">
-  <h1>말따라 프롬프터</h1>
-  <p class="sub">대본을 붙여넣고 촬영을 시작하면, 말하는 속도에 맞춰 대본이 자동으로 따라 내려옵니다.</p>
-  <textarea id="script" aria-label="대본">안녕하세요, 오늘은 제가 새로 준비한 프로젝트를 소개해 드리려고 합니다.
-
-먼저 이 프로젝트를 시작하게 된 이유부터 말씀드릴게요. 카메라 앞에서 대본을 외우는 일은 생각보다 훨씬 어렵습니다.
-
-그래서 말하는 속도에 맞춰 글자가 따라오는 프롬프터를 만들었습니다. 끝까지 시청해 주셔서 감사합니다.</textarea>
-  <div class="row">
-    <label>인식 언어<select id="lang"><option value="ko-KR">한국어</option><option value="en-US">English</option><option value="ja-JP">日本語</option></select></label>
-    <label>따라가기 방식<select id="mode"><option value="voice">음성 인식</option><option value="s80">자동 · 느림</option><option value="s110">자동 · 보통</option><option value="s150">자동 · 빠름</option></select></label>
-    <label>카메라<select id="face"><option value="user">전면</option><option value="environment">후면</option></select></label>
-    <label>글자 크기<input id="fs" type="range" min="20" max="64" value="34"></label>
+<div id="app">
+  <div id="panes">
+    <div id="pp"><div id="text"></div></div>
+    <div id="dv" role="separator" aria-label="영역 크기 조절"></div>
+    <div id="cp">
+      <video id="cam" playsinline muted autoplay></video>
+      <div id="count"></div><div id="status"></div>
+      <div id="err" hidden><div id="errmsg"></div><button class="btn" id="retry">카메라 다시 켜기</button></div>
+    </div>
   </div>
-  <div id="pv" aria-label="글자 크기 미리보기"></div>
-  <button class="btn big" id="go">카메라 켜기</button>
-  <div id="msg"></div>
-</section>
-
-<section id="stage">
-  <video id="cam" playsinline muted autoplay></video>
-  <div id="prompter"><div id="text"></div></div>
-  <div id="status"></div>
-  <div id="count"></div>
-  <div id="bar">
-    <button id="smaller" aria-label="글자 작게">가−</button>
-    <button id="rec">녹화 시작</button>
-    <button id="bigger" aria-label="글자 크게">가+</button>
-    <button id="restart">처음부터</button>
+  <div id="panel">
+    <div class="main">
+      <button class="btn rec" id="rec">● 촬영 시작</button>
+      <button class="btn" id="prac">연습</button>
+      <button class="btn" id="restart">처음부터</button>
+      <button class="btn" id="swap">좌우 바꾸기</button>
+      <button class="btn" id="edit">대본 편집</button>
+    </div>
+    <details open><summary>설정</summary>
+      <div class="grid">
+        <label>프롬프터 영역 크기<input id="r" type="range" min="20" max="80" value="50"></label>
+        <label>글자 크기<input id="fs" type="range" min="18" max="80" value="34"></label>
+        <label>따라가기 방식<select id="mode"><option value="voice">음성 인식</option><option value="s80">자동 · 느림</option><option value="s110">자동 · 보통</option><option value="s150">자동 · 빠름</option></select></label>
+        <label>인식 언어<select id="lang"><option value="ko-KR">한국어</option><option value="en-US">English</option><option value="ja-JP">日本語</option></select></label>
+        <label>카메라<select id="face"><option value="user">전면</option><option value="environment">후면</option></select></label>
+        <label class="ck"><input id="mirror" type="checkbox" checked>전면 화면 좌우 반전</label>
+      </div>
+    </details>
   </div>
-</section>
+</div>
 
-<section id="review" hidden>
-  <h1>촬영 완료</h1>
+<div id="editor" class="modal" hidden>
+  <textarea id="script" aria-label="대본"></textarea>
+  <button class="btn rec" id="apply">적용</button>
+</div>
+<div id="review" class="modal" hidden>
   <video id="out" controls playsinline></video>
-  <a class="btn" id="dl" download>영상 저장</a>
-  <button class="btn big" id="again" style="background:var(--card);color:var(--fg);border:1px solid var(--line)">다시 촬영</button>
-</section>
+  <a class="btn rec" id="dl" download>영상 저장</a>
+  <button class="btn" id="close">닫고 다시 촬영</button>
+</div>
 
 <script>
 const $=id=>document.getElementById(id);
-let spans=[],keys=[],pos=0,stream,mr,chunks=[],recog,running=false,timer,fs=34,mime='';
+const DEF="안녕하세요, 오늘은 제가 새로 준비한 프로젝트를 소개해 드리려고 합니다.\n\n먼저 이 프로젝트를 시작하게 된 이유부터 말씀드릴게요. 카메라 앞에서 대본을 외우는 일은 생각보다 훨씬 어렵습니다.\n\n그래서 말하는 속도에 맞춰 글자가 따라오는 프롬프터를 만들었습니다. 끝까지 시청해 주셔서 감사합니다.";
 const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+let spans=[],keys=[],pos=0,stream,mr,chunks=[],recog,running=false,recording=false,timer,mime='',st={};
 const norm=s=>s.toLowerCase().replace(/[^\p{L}\p{N}]/gu,'');
-function bg(s){const r=new Set();for(let i=0;i<s.length-1;i++)r.add(s.slice(i,i+2));return r}
+const bg=s=>{const r=new Set();for(let i=0;i<s.length-1;i++)r.add(s.slice(i,i+2));return r};
 function sim(a,b){if(!a||!b)return 0;if(a===b)return 1;if(a.length<2||b.length<2)return 0;
   const x=bg(a),y=bg(b);let n=0;x.forEach(g=>{if(y.has(g))n++});return 2*n/(x.size+y.size)}
+
+/* settings */
+function save(){try{localStorage.setItem('prompter-v2',JSON.stringify(st))}catch(_){}}
+function load(){try{st=JSON.parse(localStorage.getItem('prompter-v2')||'{}')}catch(_){st={}}
+  st={script:DEF,r:50,fs:34,mode:'voice',lang:'ko-KR',face:'user',mirror:true,swap:false,...st}}
+function applyUi(){
+  const root=document.documentElement.style;root.setProperty('--r',st.r);root.setProperty('--fs',st.fs+'px');
+  $('panes').classList.toggle('swap',st.swap);
+  $('cam').classList.toggle('mirror',st.mirror&&st.face==='user');
+}
+function bind(id,key,num,after){const e=$(id);
+  e[e.type==='checkbox'?'checked':'value']=st[key];
+  e.oninput=()=>{st[key]=e.type==='checkbox'?e.checked:(num?+e.value:e.value);applyUi();save();after&&after()}}
+
+/* script */
 function build(){
-  const box=$('text');box.innerHTML='';spans=[];keys=[];pos=0;
-  $('script').value.split('\n').forEach(line=>{
+  const box=$('text');box.innerHTML='';spans=[];keys=[];
+  st.script.split('\n').forEach(line=>{
     const ws=line.split(/\s+/).filter(Boolean);
     if(!ws.length){const d=document.createElement('span');d.className='ln';box.appendChild(d);return}
-    ws.forEach(w=>{const s=document.createElement('span');s.className='w';s.textContent=w;
-      const i=spans.length;s.onclick=()=>setPos(i);spans.push(s);keys.push(norm(w));
-      box.appendChild(s);box.appendChild(document.createTextNode(' '))});
+    ws.forEach(w=>{const s=document.createElement('span'),i=spans.length;s.textContent=w;
+      s.onclick=()=>setPos(i);spans.push(s);keys.push(norm(w));box.appendChild(s);box.appendChild(document.createTextNode(' '))});
     box.appendChild(document.createElement('br'));
   });
   setPos(0);
@@ -101,7 +121,7 @@ function build(){
 function setPos(p){
   pos=Math.max(0,Math.min(p,spans.length));
   spans.forEach((s,i)=>{s.className='w'+(i<pos?' done':i===pos?' cur':'')});
-  const c=spans[Math.min(pos,spans.length-1)],pr=$('prompter');
+  const c=spans[Math.min(pos,spans.length-1)],pr=$('pp');
   if(c)pr.scrollTo({top:c.offsetTop+$('text').offsetTop-pr.clientHeight*.3,behavior:'smooth'});
   if(running&&pos>=spans.length)$('status').textContent='대본 끝 · 정지 버튼을 눌러 마무리하세요';
 }
@@ -110,84 +130,102 @@ function onSpeech(t){
   const tail=tk.slice(-4);let best=-1,bi=-1;
   for(let i=Math.max(0,pos-3);i<=Math.min(spans.length-1,pos+30);i++){
     let sc=0;for(let k=0;k<tail.length;k++){const j=i-(tail.length-1-k);if(j>=0)sc+=sim(tail[k],keys[j])}
-    sc=sc/tail.length-Math.abs(i-pos)*.003;
-    if(sc>best){best=sc;bi=i}
+    sc=sc/tail.length-Math.abs(i-pos)*.003;if(sc>best){best=sc;bi=i}
   }
   if(best>=(tail.length>1?.55:.8)&&bi+1>pos)setPos(bi+1);
 }
 function startRecog(){
-  recog=new SR();recog.lang=$('lang').value;recog.continuous=true;recog.interimResults=true;
+  recog=new SR();recog.lang=st.lang;recog.continuous=true;recog.interimResults=true;
   recog.onresult=e=>{let t='';for(let i=e.resultIndex;i<e.results.length;i++)t+=e.results[i][0].transcript+' ';onSpeech(t)};
-  recog.onerror=e=>{if(e.error==='not-allowed')$('status').textContent='음성 인식 권한이 필요합니다. 자동 속도 모드를 이용해 보세요.'};
+  recog.onerror=e=>{if(e.error==='not-allowed')$('status').textContent='음성 인식 권한이 필요합니다. 자동 속도 방식을 이용해 보세요.'};
   recog.onend=()=>{if(running)try{recog.start()}catch(_){}};
-  try{recog.start()}catch(_){}
+  recog.start();
 }
-function begin(){
-  running=true;chunks=[];
-  try{
-    mr=new MediaRecorder(stream,mime?{mimeType:mime}:undefined);
-    mr.ondataavailable=e=>{if(e.data.size)chunks.push(e.data)};
-    mr.onstop=finish;mr.start(1000);
-  }catch(e){running=false;$('status').textContent='녹화를 시작하지 못했습니다: '+(e.message||e.name);$('rec').textContent='녹화 시작';return}
-  const m=$('mode').value;
-  if(m==='voice'){
-    if(SR){try{startRecog();$('status').textContent='말씀하시면 대본이 따라갑니다'}catch(e){$('status').textContent='음성 인식을 시작하지 못했습니다. 자동 속도 모드를 이용해 보세요.'}}
-    else $('status').textContent='이 브라우저는 음성 인식을 지원하지 않습니다. 단어를 눌러 위치를 옮기세요.';
-  }else{
-    const wpm=+m.slice(1);timer=setInterval(()=>{if(pos<spans.length)setPos(pos+1)},60000/wpm);
-    $('status').textContent='자동 속도로 진행 중';
-  }
-  $('rec').textContent='■ 정지';
-}
-function stopAll(){running=false;clearInterval(timer);try{recog&&recog.stop()}catch(_){}
-  if(mr&&mr.state!=='inactive')mr.stop()}
-function finish(){
-  const blob=new Blob(chunks,{type:mime||'video/webm'});const url=URL.createObjectURL(blob);
-  $('out').src=url;$('dl').href=url;$('dl').download='prompter-video.'+(mime.includes('mp4')?'mp4':'webm');
-  stream.getTracks().forEach(t=>t.stop());
-  $('stage').style.display='none';$('review').hidden=false;
-}
+
+/* camera */
 async function getStream(){
-  const tries=[
-    {video:{facingMode:$('face').value},audio:true},
-    {video:true,audio:true},
-    {video:true,audio:false}
-  ];
-  let last;
-  for(const c of tries){try{return await navigator.mediaDevices.getUserMedia(c)}catch(e){last=e}}
-  throw last;
+  const tries=[{video:{facingMode:st.face},audio:true},{video:true,audio:true},{video:true,audio:false}];let last;
+  for(const c of tries){try{return await navigator.mediaDevices.getUserMedia(c)}catch(e){last=e}}throw last;
 }
-$('go').onclick=async()=>{
-  const m=$('msg');m.textContent='';fs=+$('fs').value;document.documentElement.style.setProperty('--fs',fs+'px');
-  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){m.textContent='이 환경에서는 카메라를 사용할 수 없습니다. Chrome이나 Safari에서 링크를 직접 열어 주세요.';return}
+async function openCam(){
+  if(running)return;
+  $('err').hidden=true;
+  if(stream)stream.getTracks().forEach(t=>t.stop());
   try{
-    m.textContent='카메라를 여는 중…';
+    if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia)throw{name:'Unsupported'};
     stream=await getStream();
     mime=(window.MediaRecorder&&['video/mp4;codecs=avc1,mp4a.40.2','video/webm;codecs=vp9,opus','video/webm'].find(t=>MediaRecorder.isTypeSupported(t)))||'';
-    const v=$('cam');v.srcObject=stream;v.classList.toggle('mirror',$('face').value==='user');
-    build();$('setup').hidden=true;$('stage').style.display='block';
-    v.play().catch(()=>{});
-    $('rec').textContent='녹화 시작';$('status').textContent='단어를 누르면 그 위치부터 시작합니다';
-    m.textContent='';
+    $('cam').srcObject=stream;$('cam').play().catch(()=>{});
+    $('status').textContent='';
   }catch(e){
-    m.textContent=(e.name==='NotAllowedError'||e.name==='SecurityError'
-      ?'카메라·마이크 권한이 막혀 있습니다. 앱 안의 미리보기라면 링크를 Chrome이나 Safari에서 직접 열어 주세요. '
-      :'카메라를 시작하지 못했습니다. ')+'('+(e.name||'오류')+')';
+    $('errmsg').textContent=(e.name==='NotAllowedError'||e.name==='SecurityError'?'카메라·마이크 권한이 필요합니다. 브라우저 설정에서 허용한 뒤 다시 켜 주세요. ':'카메라를 시작하지 못했습니다. ')+'('+(e.name||'오류')+')';
+    $('err').hidden=false;
   }
-};
-function updatePv(){
-  document.documentElement.style.setProperty('--fs',$('fs').value+'px');
-  const ws=$('script').value.split(/\s+/).filter(Boolean).slice(0,24);
-  $('pv').innerHTML=ws.map((w,i)=>'<span class="w'+(i<3?' done':i===3?' cur':'')+'">'+w.replace(/[&<>]/g,'')+'</span>').join(' ');
+  applyUi();
 }
-$('fs').oninput=updatePv;$('script').oninput=updatePv;updatePv();
+
+/* run */
+function setUi(){
+  $('rec').textContent=recording?'■ 촬영 정지':'● 촬영 시작';
+  $('prac').textContent=running&&!recording?'■ 연습 정지':'연습';
+  $('rec').disabled=running&&!recording;$('prac').disabled=recording;
+  $('face').disabled=running;$('edit').disabled=running;
+}
+function begin(withRec){
+  if(withRec){
+    if(!stream||!window.MediaRecorder){$('status').textContent='카메라가 준비되지 않았습니다.';return}
+    try{chunks=[];mr=new MediaRecorder(stream,mime?{mimeType:mime}:undefined);
+      mr.ondataavailable=e=>{if(e.data.size)chunks.push(e.data)};mr.onstop=finish;mr.start(1000)}
+    catch(e){$('status').textContent='촬영을 시작하지 못했습니다: '+(e.message||e.name);return}
+  }
+  running=true;recording=withRec;
+  if(st.mode==='voice'){
+    if(SR){try{startRecog();$('status').textContent='말씀하시면 대본이 따라갑니다'}catch(_){$('status').textContent='음성 인식을 시작하지 못했습니다. 자동 속도 방식을 써 보세요.'}}
+    else $('status').textContent='이 브라우저는 음성 인식을 지원하지 않습니다. 단어를 눌러 위치를 옮기세요.';
+  }else{
+    timer=setInterval(()=>{if(pos<spans.length)setPos(pos+1)},60000/+st.mode.slice(1));
+    $('status').textContent='자동 속도로 진행 중';
+  }
+  setUi();
+}
+function stopAll(){
+  running=false;clearInterval(timer);try{recog&&recog.stop()}catch(_){}
+  if(recording&&mr&&mr.state!=='inactive')mr.stop();
+  recording=false;setUi();$('status').textContent='';
+}
+function finish(){
+  const blob=new Blob(chunks,{type:mime||'video/webm'}),url=URL.createObjectURL(blob);
+  $('out').src=url;$('dl').href=url;$('dl').download='prompter-video.'+(mime.includes('mp4')?'mp4':'webm');
+  $('review').hidden=false;
+}
 $('rec').onclick=()=>{
   if(running){stopAll();return}
   const c=$('count');let n=3;c.style.display='flex';c.textContent=n;
-  const t=setInterval(()=>{n--;if(n>0)c.textContent=n;else{clearInterval(t);c.style.display='none';begin()}},1000);
+  const t=setInterval(()=>{n--;if(n>0)c.textContent=n;else{clearInterval(t);c.style.display='none';begin(true)}},1000);
 };
+$('prac').onclick=()=>{running?stopAll():begin(false)};
 $('restart').onclick=()=>setPos(0);
-$('bigger').onclick=()=>{fs=Math.min(80,fs+4);document.documentElement.style.setProperty('--fs',fs+'px')};
-$('smaller').onclick=()=>{fs=Math.max(18,fs-4);document.documentElement.style.setProperty('--fs',fs+'px')};
-$('again').onclick=()=>{$('review').hidden=true;$('setup').hidden=false;$('out').removeAttribute('src')};
+$('swap').onclick=()=>{st.swap=!st.swap;applyUi();save()};
+$('retry').onclick=openCam;
+$('close').onclick=()=>{$('review').hidden=true;$('out').removeAttribute('src')};
+$('edit').onclick=()=>{$('script').value=st.script;$('editor').hidden=false};
+$('apply').onclick=()=>{st.script=$('script').value;save();build();$('editor').hidden=true};
+
+/* divider drag */
+$('dv').onpointerdown=e=>{
+  const dv=$('dv');dv.setPointerCapture(e.pointerId);
+  const mv=ev=>{
+    const rc=$('panes').getBoundingClientRect(),vert=getComputedStyle($('panes')).flexDirection.startsWith('column');
+    let f=vert?(ev.clientY-rc.top)/rc.height:(ev.clientX-rc.left)/rc.width;
+    if(st.swap)f=1-f;
+    st.r=Math.round(Math.max(20,Math.min(80,f*100)));$('r').value=st.r;applyUi();
+  };
+  const up=()=>{dv.removeEventListener('pointermove',mv);dv.removeEventListener('pointerup',up);save()};
+  dv.addEventListener('pointermove',mv);dv.addEventListener('pointerup',up);
+};
+
+load();
+bind('r','r',true);bind('fs','fs',true);bind('mode','mode');bind('lang','lang');bind('mirror','mirror');
+bind('face','face',false,openCam);
+applyUi();build();setUi();openCam();
 </script></body></html>
